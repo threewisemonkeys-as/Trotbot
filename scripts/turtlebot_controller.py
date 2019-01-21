@@ -46,14 +46,14 @@ class Controller():
 
 	def path_update(self, data):
 		"""Update path to be taken by both."""
-		self.old_path = self.curr_path
+		self.old_path = self.curr_path[:]
 		self.curr_path = []
 		for epoint in data.bliss:
 			i = (epoint.x, epoint.y)
 			self.curr_path.append(i)
 
 		if self.curr_path != self.old_path:
-			path_changed = True
+			self.path_changed = True
 			self.counter = 1
 
 		self.vel_publisher()
@@ -64,6 +64,7 @@ class Controller():
 		if(self.dist_bw(self.curr_pos, self.curr_path[self.counter]) < pt_buffer):
 			self.counter+=1
 
+
 		next_pt = self.curr_path[self.counter]
 		ang_diff = -self.curr_ang + math.atan((next_pt[1] - self.curr_pos[1]) / (next_pt[0] - self.curr_pos[0]))
 		vel = Twist()
@@ -72,14 +73,14 @@ class Controller():
 			ang_diff = -self.curr_ang + math.atan((next_pt[1] - self.curr_pos[1]) / (next_pt[0] - self.curr_pos[0]))
 			print(ang_diff)
 			turn_time = abs(ang_diff / ang_vel)
-			vel.linear.x = 0
-			vel.angular.z = ang_diff*ang_vel
+			vel.linear.x = 0.2
+			vel.angular.z = ang_diff*ang_vel/abs(ang_diff)
 			# print ("vel")
 			self.vel_pub.publish(vel)
 
 			# print("vel")
 		vel.linear.x = lin_vel
-		vel.angular.z = vel.angular.z = ang_diff*ang_vel
+		vel.angular.z = vel.angular.z = ang_diff/abs(ang_diff)*ang_vel
 		self.vel_pub.publish(vel)
 
 def main():
